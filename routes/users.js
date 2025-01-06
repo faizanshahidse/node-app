@@ -1,9 +1,9 @@
-var express = require('express');
-var router = express.Router();
+const express = require("express");
+const router = express.Router();
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
+const userController = require("../controllers/users");
+const { isAuthenticated } = require("../middleware/auth");
+
+router.get("/:id", isAuthenticated, userController.getUserById);
 
 module.exports = router;

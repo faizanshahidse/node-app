@@ -8,10 +8,11 @@ const cors = require("cors");
 // const indexRouter = require("./routes/index");
 // const usersRouter = require("./routes/users");
 const authRouter = require("./routes/auth");
+const userRouter = require("./routes/users");
 
 const app = express();
 
-const { PORT, NODE_ENV } = process.env;
+const { PORT, NODE_ENV, COOKIE_SECRET } = process.env;
 
 const isDev = NODE_ENV === "development";
 
@@ -36,29 +37,32 @@ app.get("/", (req, res) => {
 app.use(logger("dev"));
 app.use(express.json());
 // app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser(COOKIE_SECRET));
 
 // express.static middleware to serve the static files from the public directory.
 app.use(express.static(path.join(__dirname, "public")));
 
 // app.use("/", indexRouter);
 // app.use("/users", usersRouter);
-app.use("/auth", authRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/users", userRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
 });
 
-// error handler
+// error handler middleware
 app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = isDev ? err : {};
+  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render("error");
+  res.status(statusCode).json({
+    status: "fail",
+    message: err.message,
+    stack: process.env.NODE_ENV === "production" ? null : err.stack,
+    optional: err.optional,
+  });
+  next();
 });
 
 module.exports = app;

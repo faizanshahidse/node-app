@@ -10,6 +10,7 @@ const {
   REFRESH_TOKEN_SECRET,
   ACCESS_TOKEN_EXPIRE,
   REFRESH_TOKEN_EXPIRE,
+  NODE_ENV,
 } = process.env;
 
 const isAuthenticated = (req, res, next) => {
@@ -52,14 +53,15 @@ const isAuthenticated = (req, res, next) => {
 
 const generateAuthToken = async (req, res, next) => {
   const { userId } = req;
+  const dev = NODE_ENV === "development";
 
-  const RefreshToken = generateJWT(
+  const refreshToken = generateJWT(
     userId,
     REFRESH_TOKEN_SECRET,
     REFRESH_TOKEN_EXPIRE
   );
 
-  const AccessToken = generateJWT(
+  const accessToken = generateJWT(
     userId,
     ACCESS_TOKEN_SECRET,
     ACCESS_TOKEN_EXPIRE
@@ -69,12 +71,17 @@ const generateAuthToken = async (req, res, next) => {
     Date.now() + ms(REFRESH_TOKEN_EXPIRE)
   ).getTime();
 
-  const user = await User.updateOne(userId, {
-    refreshToken: RefreshToken,
-    refreshTokenExpirationTime: RefreshTokenExpirationTime,
-  });
+  const user = await User.findById(userId);
 
-  res.cookie("refreshToken", RefreshToken, {
+  await User.updateOne(
+    { _id: user.id },
+    {
+      refreshToken,
+      refreshTokenExpirationTime: RefreshTokenExpirationTime,
+    }
+  );
+
+  res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: !dev,
     signed: true,
@@ -85,7 +92,7 @@ const generateAuthToken = async (req, res, next) => {
 
   res.status(200).json({
     user,
-    token: AccessToken,
+    accessToken,
     AccessTokenExpiresAt,
   });
 };

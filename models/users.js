@@ -21,6 +21,9 @@ const userSchema = new Schema({
     type: String,
     require: [true, "password is required"],
   },
+  refreshToken: {
+    type: String,
+  },
 });
 
 module.exports = model("User", userSchema);

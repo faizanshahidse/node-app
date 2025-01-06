@@ -38,14 +38,16 @@ const signup = async (req, res, next) => {
     const newUser = await User.create(newUserObj);
     req.userId = newUser.id;
 
-    res.status(200).json({ message: "User is created successfully", newUser });
+    return next();
+
+    // res.status(200).json({ message: "User is created successfully", newUser });
   } catch (error) {
     console.log(error);
   }
 };
 
-const login = (req, res, next) => {
-  const { username, password } = req.body;
+const login = async (req, res, next) => {
+  const { email, password } = req.body;
 
   try {
     if (!email || !password) {
@@ -54,7 +56,7 @@ const login = (req, res, next) => {
       });
     }
 
-    const user = User.findOne({ email });
+    const user = await User.findOne({ email });
 
     if (!user) {
       const error = createError.Unauthorized("Invalid username or password");
@@ -69,6 +71,7 @@ const login = (req, res, next) => {
     }
 
     req.userId = user.id;
+    return next();
   } catch (error) {
     return next(error);
   }
@@ -121,7 +124,14 @@ const refreshAccessToken = async (req, res, next) => {
   }
 };
 
+const logout = async (req, res, next) => {
+  await clearTokens(req, res, next);
+  res.sendStatus(204);
+};
+
 module.exports = {
   signup,
   login,
+  refreshAccessToken,
+  logout,
 };

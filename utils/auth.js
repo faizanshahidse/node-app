@@ -6,17 +6,21 @@ const generateJWT = (userId, secret, expirationTime) => {
   return jwt.sign({ userId }, secret, { expiresIn: expirationTime });
 };
 
-const clearTokens = async (req, res) => {
+const clearTokens = async (req, res, next) => {
   const { signedCookies, userId } = req;
   const { refreshToken } = signedCookies;
 
-  await User.updateOne({ userId }, { refreshToken: null });
+  const userUpdated = await User.updateOne(
+    { refreshToken },
+    { refreshToken: null }
+  );
 
   res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: !dev,
     signed: true,
   });
+  return next();
 };
 
 module.exports = {
