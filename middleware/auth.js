@@ -88,12 +88,12 @@ const generateAuthToken = async (req, res, next) => {
     expires: new Date(Date.now() + ms(REFRESH_TOKEN_EXPIRE)),
   });
 
-  const AccessTokenExpiresAt = new Date(Date.now() + ms(ACCESS_TOKEN_EXPIRE));
+  const expiresAt = new Date(Date.now() + ms(ACCESS_TOKEN_EXPIRE));
 
   res.status(200).json({
     user,
     accessToken,
-    AccessTokenExpiresAt,
+    expiresAt,
   });
 };
 

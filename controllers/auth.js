@@ -18,7 +18,7 @@ const signup = async (req, res, next) => {
   }
 
   try {
-    const userAlreadyExist = await User.findOne({ email });
+    const userAlreadyExist = await User.findOne({ username } || { email });
 
     console.log("userAlreadyExist........", userAlreadyExist);
 
@@ -47,16 +47,16 @@ const signup = async (req, res, next) => {
 };
 
 const login = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { username, email, password } = req.body;
 
   try {
-    if (!email || !password) {
+    if (!username || !password) {
       res.status(422).json({
         error: "Please fill all the required fields!",
       });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ username } || { email });
 
     if (!user) {
       const error = createError.Unauthorized("Invalid username or password");

@@ -10,6 +10,8 @@ const clearTokens = async (req, res, next) => {
   const { signedCookies, userId } = req;
   const { refreshToken } = signedCookies;
 
+  const dev = process.env.NODE_ENV === "development";
+
   const userUpdated = await User.updateOne(
     { refreshToken },
     { refreshToken: null }
